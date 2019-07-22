@@ -1,7 +1,7 @@
 {
-   "abstract" : "It's new $module",
+   "abstract" : "Types for any typed anonymous subroutine.",
    "author" : [
-      "mp0liiu <raian@reeshome.org>"
+      "ybrliiu <raian@reeshome.org>"
    ],
    "dynamic_config" : 0,
    "generated_by" : "Minilla/v3.1.4, CPAN::Meta::Converter version 2.150010",
@@ -42,7 +42,7 @@
       },
       "runtime" : {
          "requires" : {
-            "perl" : "5.008001"
+            "perl" : "5.010001"
          }
       },
       "test" : {
@@ -52,6 +52,17 @@
       }
    },
    "release_status" : "unstable",
+   "resources" : {
+      "bugtracker" : {
+         "web" : "https://github.com/ybrliiu/p5-Types-AnonSub/issues"
+      },
+      "homepage" : "https://github.com/ybrliiu/p5-Types-AnonSub",
+      "repository" : {
+         "type" : "git",
+         "url" : "git://github.com/ybrliiu/p5-Types-AnonSub.git",
+         "web" : "https://github.com/ybrliiu/p5-Types-AnonSub"
+      }
+   },
    "version" : "0.01",
    "x_serialization_backend" : "JSON::PP version 4.02",
    "x_static_install" : 1
