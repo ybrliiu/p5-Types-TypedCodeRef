@@ -86,11 +86,22 @@ __END__
 
 =head1 NAME
 
-Types::AnonSub - It's new $module
+Types::AnonSub - Types for any typed anonymous subroutine.
 
 =head1 SYNOPSIS
 
-    use Types::AnonSub;
+    use Test2::V0;
+    use Types::AnonSub -types;
+    use Types::Standard qw( Int Str );
+    use Sub::TypedAnon;
+    
+    my $type = TypedCodeRef[ [Int, Int] => Int ];
+    ok $type->check(anon [Int, Int] => Int, sub { $_[0] + $_[1] });
+    ok !$type->check(0);
+    ok !$type->check([]);
+    ok !$type->check(sub {});
+    
+    done_testing;
 
 =head1 DESCRIPTION
 
