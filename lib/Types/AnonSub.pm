@@ -24,9 +24,13 @@ __PACKAGE__->add_type({
   name                 => 'TypedCodeRef',
   parent               => CodeRef,
   constraint_generator => sub {
+    # TODO: type constraint はこの判定方法でいいのか?
     state $types_constraint = Types::Standard::HasMethods([qw( check get_message )]);
     state $checker          = Type::Params::compile(
-      Types::Standard::ArrayRef([$types_constraint]),
+      # TODO: named parameters も受け付けるようにする
+      # TODO: Sub::Meta::Parameters を受け付けれるようにするかどうか検討する
+      Types::Standard::ArrayRef([$types_constraint]), 
+      # TODO: Sub::Meta::Returns を受け付けれるようにするかどうか検討する
       $types_constraint
     );
     my ($params, $return_type) = $checker->(@_);
@@ -42,6 +46,7 @@ __PACKAGE__->add_type({
       );
     };
 
+    # TODO: CodeRefではなくTypeConstraint返した方がちゃんと型名つけれて良さそう
     sub {
       my $typed_code_ref = shift;
       return !!0 if ref $typed_code_ref ne 'CODE';
@@ -53,8 +58,10 @@ __PACKAGE__->add_type({
 
 sub get_meta {
   my $typed_code_ref = shift;
+  # TODO: 開放閉鎖原則に沿う形にする
   my $meta = do {
     if ( my $info = Sub::TypedAnon::get_info($typed_code_ref) ) {
+      # TODO: $info->{params} がnamedな場合も考慮する
       my @parameters = map { Sub::Meta::Param->new($_) } @{ $info->{params} };
       Sub::Meta->new(
         parameters => Sub::Meta::Parameters->new(args => \@parameters),
@@ -65,6 +72,7 @@ sub get_meta {
       );
     }
     else {
+      # TODO: 渡されたAnonymous Subroutineの型が不明の場合の扱いがこれで良いのかは要検討
       Sub::Meta->new(
         parameters => Sub::Meta::Parameters->new(
           args   => [],
