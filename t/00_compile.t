@@ -1,8 +1,8 @@
 use strict;
-use Test::More 0.98;
+use Test::More;
 
 use_ok $_ for qw(
-    Types::AnonSub
+    Types::TypedCodeRef
 );
 
 done_testing;
