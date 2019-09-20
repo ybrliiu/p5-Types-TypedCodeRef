@@ -1,4 +1,4 @@
-package Types::AnonSub;
+package Types::TypedCodeRef;
 use 5.010001;
 use strict;
 use warnings;
@@ -24,16 +24,20 @@ __PACKAGE__->add_type({
   name                 => 'TypedCodeRef',
   parent               => CodeRef,
   constraint_generator => sub {
-    # TODO: type constraint はこの判定方法でいいのか?
-    state $types_constraint = Types::Standard::HasMethods([qw( check get_message )]);
-    state $checker          = Type::Params::compile(
-      # TODO: named parameters も受け付けるようにする
-      # TODO: Sub::Meta::Parameters を受け付けれるようにするかどうか検討する
-      Types::Standard::ArrayRef([$types_constraint]), 
-      # TODO: Sub::Meta::Returns を受け付けれるようにするかどうか検討する
-      $types_constraint
-    );
-    my ($params, $return_type) = $checker->(@_);
+    my $parent = CodeRef;
+    return $parent unless @_;  
+
+    state $validator = do {
+      my $type_constraint_types = Types::Standard::HasMethods([qw( check get_message )]);
+      Type::Params::compile(
+        # TODO: named parameters も受け付けるようにする
+        # TODO: Sub::Meta::Parameters を受け付けれるようにするかどうか検討する
+        Types::Standard::ArrayRef([$type_constraint_types]),
+        # TODO: Sub::Meta::Returns を受け付けれるようにするかどうか検討する
+        $type_constraint_types,
+      );
+    };
+    my ($params, $return_type) = $validator->(@_);
 
     my $constraint_meta = do {
       my @meta_params = map { Sub::Meta::Param->new($_) } @$params;
@@ -46,13 +50,19 @@ __PACKAGE__->add_type({
       );
     };
 
-    # TODO: CodeRefではなくTypeConstraint返した方がちゃんと型名つけれて良さそう
-    sub {
-      my $typed_code_ref = shift;
-      return !!0 if ref $typed_code_ref ne 'CODE';
-      my $meta = get_meta($typed_code_ref);
-      $constraint_meta->is_same_interface($meta);
-    };
+    $parent->create_child_type(
+      display_name => 'TypedCodeRef',
+      message => sub {
+        my $invalid_value = shift;
+        $parent->get_message($invalid_value);
+      },
+      constraint => sub {
+        my $typed_code_ref = shift;
+        return !!0 if ref $typed_code_ref ne 'CODE';
+        my $meta = get_meta($typed_code_ref);
+        $constraint_meta->is_same_interface($meta);
+      },
+    );
   },
 });
 

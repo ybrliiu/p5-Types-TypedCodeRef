@@ -1,11 +1,11 @@
 # NAME
 
-Types::AnonSub - Types for any typed anonymous subroutine.
+Types::TypedCodeRef - Types for any typed anonymous subroutine.
 
 # SYNOPSIS
 
     use Test2::V0;
-    use Types::AnonSub -types;
+    use Types::TypedCodeRef -types;
     use Types::Standard qw( Int Str );
     use Sub::TypedAnon;
     
@@ -19,7 +19,7 @@ Types::AnonSub - Types for any typed anonymous subroutine.
 
 # DESCRIPTION
 
-Types::AnonSub is ...
+Types::TypedCodeRef is ...
 
 # LICENSE
 
