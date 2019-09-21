@@ -27,7 +27,6 @@ sub create_type {
 
   Type::Tiny->new(
     name                 => 'TypedCodeRef',
-    parent               => CodeRef,
     name_generator       => $class->_build_name_generator,
     constraint_generator => $class->_build_constraint_generator($sub_meta_finders),
   );
@@ -106,7 +105,7 @@ sub _build_constraint_generator {
 
     sub {
         my $typed_code_ref = shift;
-        return !!0 if ref $typed_code_ref ne 'CODE';
+        return !!0 unless _is_callable($typed_code_ref);
 
         my $maybe_meta = find_sub_meta($sub_meta_finders, $typed_code_ref);
         my $meta = do {
@@ -129,6 +128,13 @@ sub _build_constraint_generator {
   }
 }
 
+# I should allow overload?
+sub _is_callable {
+  my $callable = shift;
+  # for CODE base object
+  ref $callable eq 'CODE' || eval { sub { &$callable } || 1; };
+}
+
 sub find_sub_meta {
   my ($sub_meta_finders, $typed_code_ref) = @_;
   for my $finder (@$sub_meta_finders) {
@@ -142,30 +148,31 @@ __PACKAGE__->add_type( __PACKAGE__->create_type([\&get_sub_meta_from_sub_anon_ty
 
 sub get_sub_meta_from_sub_anon_typed {
   my $typed_code_ref = shift;
-  if ( my $info = Sub::Anon::Typed::get_info($typed_code_ref) ) {
+  if ( Scalar::Util::blessed($typed_code_ref) && $typed_code_ref->isa('Sub::Anon::Typed') ) {
     my @parameters = do {
-      if ( ref $info->{params} eq 'ARRAY' ) {
-        map { Sub::Meta::Param->new($_) } @{ $info->{params} };
+      if ( ref $typed_code_ref->params eq 'ARRAY' ) {
+        map { Sub::Meta::Param->new($_) } @{ $typed_code_ref->params };
       }
       else {
         map {
           Sub::Meta::Param->new({
             name  => $_,
-            type  => $info->{params}{$_},
+            type  => $typed_code_ref->params->{$_},
             named => 1,
           });
-        } sort keys %{ $info->{params} };
+        } sort keys %{ $typed_code_ref->params };
       }
     };
-    Sub::Meta->new(
+    return Sub::Meta->new(
       parameters => Sub::Meta::Parameters->new(args => \@parameters),
       returns    => Sub::Meta::Returns->new(
-        scalar => $info->{isa},
-        list   => $info->{isa},
-        void   => $info->{isa},
+        scalar => $typed_code_ref->returns,
+        list   => $typed_code_ref->returns,
+        void   => $typed_code_ref->returns,
       ),
     );
   }
+  return;
 }
 
 __PACKAGE__->meta->make_immutable;
