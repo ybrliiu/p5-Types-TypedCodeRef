@@ -87,7 +87,7 @@ sub _build_constraint_generator {
                   type  => $params->{$_},
                   named => 1,
                 });
-              } keys %$params;
+              } sort keys %$params;
               Sub::Meta::Parameters->new( args => \@meta_params );
             }
           },
@@ -154,7 +154,7 @@ sub get_sub_meta_from_sub_anon_typed {
             type  => $info->{params}{$_},
             named => 1,
           });
-        } keys %{ $info->{params} };
+        } sort keys %{ $info->{params} };
       }
     };
     Sub::Meta->new(

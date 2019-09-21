@@ -3,8 +3,6 @@ use Types::TypedCodeRef -types;
 use Types::Standard qw( Int Str ArrayRef );
 use Sub::Anon::Typed;
 
-$SIG{__DIE__} = \&Carp::confess;
-
 my $type = TypedCodeRef[ [Int, Int] => Int ];
 ok $type->check(anon [Int, Int] => Int, sub { $_[0] + $_[1] });
 ok !$type->check(anon [Int] => Int, sub { $_[0] + $_[1] });
