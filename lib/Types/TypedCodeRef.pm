@@ -58,6 +58,7 @@ sub create_type {
                     named => 1,
                   });
                 } keys %$params;
+                Sub::Meta::Parameters->new( args => \@meta_params );
               }
             },
             returns => Sub::Meta::Returns->new(
@@ -155,12 +156,12 @@ __END__
 
 =head1 NAME
 
-Types::AnonSub - Types for any typed anonymous subroutine.
+Types::TypedCodeRef - Types for any typed anonymous subroutine.
 
 =head1 SYNOPSIS
 
     use Test2::V0;
-    use Types::AnonSub -types;
+    use Types::TypedCodeRef -types;
     use Types::Standard qw( Int Str );
     use Sub::TypedAnon;
     
@@ -174,7 +175,7 @@ Types::AnonSub - Types for any typed anonymous subroutine.
 
 =head1 DESCRIPTION
 
-Types::AnonSub is ...
+Types::TypedCodeRef is ...
 
 =head1 LICENSE
 
