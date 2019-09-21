@@ -11,10 +11,10 @@ use Type::Library (
 );
 
 use Carp ();
-use Type::Params ();
-use Types::Standard qw( CodeRef );
+use Type::Params qw( compile compile_named multisig );
+use Types::Standard qw( ArrayRef HashRef CodeRef InstanceOf );
 use Scalar::Util;
-use Sub::TypedAnon ();
+use Sub::Anon::Typed ();
 use Sub::Meta;
 use Sub::Meta::Param;
 use Sub::Meta::Parameters;
@@ -28,26 +28,44 @@ __PACKAGE__->add_type({
     return $parent unless @_;  
 
     state $validator = do {
-      my $type_constraint_types = Types::Standard::HasMethods([qw( check get_message )]);
-      Type::Params::compile(
-        # TODO: named parameters も受け付けるようにする
-        # TODO: Sub::Meta::Parameters を受け付けれるようにするかどうか検討する
-        Types::Standard::ArrayRef([$type_constraint_types]),
-        # TODO: Sub::Meta::Returns を受け付けれるようにするかどうか検討する
-        $type_constraint_types,
+      my $TypeConstraint = Types::Standard::HasMethods([qw( check get_message )]);
+      multisig(
+        compile( ArrayRef([$TypeConstraint]), $TypeConstraint ),
+        compile( HashRef([$TypeConstraint]), $TypeConstraint ),
+        # compile( InstanceOf(['Sub::Meta']) ),
       );
     };
-    my ($params, $return_type) = $validator->(@_);
 
     my $constraint_meta = do {
-      my @meta_params = map { Sub::Meta::Param->new($_) } @$params;
-      Sub::Meta->new(
-        parameters => Sub::Meta::Parameters->new(args => \@meta_params),
-        returns    => Sub::Meta::Returns->new(
-          scalar => $return_type,
-          list   => $return_type,
-        ),
-      );
+      if ( @_ == 2 ) {
+        my ($params, $returns) = $validator->(@_);
+        Sub::Meta->new(
+          parameters => do {
+            if ( ref $params eq 'ARRAY' ) {
+              my @meta_params = map { Sub::Meta::Param->new($_) } @$params;
+              Sub::Meta::Parameters->new(args => \@meta_params);
+            }
+            else {
+              my @meta_params = map {
+                Sub::Meta::Param->new({
+                  name  => $_,
+                  type  => $params->{$_},
+                  named => 1,
+                });
+              } keys %$params;
+            }
+          },
+          returns    => Sub::Meta::Returns->new(
+            scalar => $returns,
+            list   => $returns,
+            void   => $returns,
+          ),
+        );
+      }
+      else {
+        my ($constraint_meta) = $validator->(@_);
+        $constraint_meta;
+      }
     };
 
     $parent->create_child_type(
@@ -70,7 +88,7 @@ sub get_meta {
   my $typed_code_ref = shift;
   # TODO: 開放閉鎖原則に沿う形にする
   my $meta = do {
-    if ( my $info = Sub::TypedAnon::get_info($typed_code_ref) ) {
+    if ( my $info = Sub::Anon::Typed::get_info($typed_code_ref) ) {
       # TODO: $info->{params} がnamedな場合も考慮する
       my @parameters = map { Sub::Meta::Param->new($_) } @{ $info->{params} };
       Sub::Meta->new(
@@ -78,6 +96,7 @@ sub get_meta {
         returns    => Sub::Meta::Returns->new(
           scalar => $info->{isa},
           list   => $info->{isa},
+          void   => $info->{isa},
         ),
       );
     }
