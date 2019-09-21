@@ -11,8 +11,9 @@ use Type::Library (
 );
 
 use Carp ();
+use Type::Tiny ();
 use Type::Params qw( compile compile_named multisig );
-use Types::Standard qw( ArrayRef HashRef CodeRef InstanceOf );
+use Types::Standard qw( ClassName ArrayRef HashRef CodeRef InstanceOf );
 use Scalar::Util;
 use Sub::Anon::Typed ();
 use Sub::Meta;
@@ -20,98 +21,129 @@ use Sub::Meta::Param;
 use Sub::Meta::Parameters;
 use Sub::Meta::Returns;
 
-__PACKAGE__->add_type({
-  name                 => 'TypedCodeRef',
-  parent               => CodeRef,
-  constraint_generator => sub {
-    my $parent = CodeRef;
-    return $parent unless @_;  
+sub create_type {
+  state $check = compile( ClassName, ArrayRef[CodeRef] );
+  my ($class, $sub_meta_finders) = $check->(@_);
 
-    state $validator = do {
-      my $TypeConstraint = Types::Standard::HasMethods([qw( check get_message )]);
-      multisig(
-        compile( ArrayRef([$TypeConstraint]), $TypeConstraint ),
-        compile( HashRef([$TypeConstraint]), $TypeConstraint ),
-        # compile( InstanceOf(['Sub::Meta']) ),
-      );
-    };
+  Type::Tiny->new(
+    name                 => 'TypedCodeRef',
+    parent               => CodeRef,
+    constraint_generator => sub {
+      my $parent = CodeRef;
+      return $parent unless @_;
 
-    my $constraint_meta = do {
-      if ( @_ == 2 ) {
-        my ($params, $returns) = $validator->(@_);
-        Sub::Meta->new(
-          parameters => do {
-            if ( ref $params eq 'ARRAY' ) {
-              my @meta_params = map { Sub::Meta::Param->new($_) } @$params;
-              Sub::Meta::Parameters->new(args => \@meta_params);
+      state $validator = do {
+        my $TypeConstraint = Types::Standard::HasMethods( [qw( check get_message )] );
+        multisig(
+          compile( ArrayRef( [$TypeConstraint] ), $TypeConstraint ),
+          compile( HashRef(  [$TypeConstraint] ), $TypeConstraint ),
+          compile( InstanceOf( ['Sub::Meta'] ) ),
+        );
+      };
+
+      my $constraint_meta = do {
+        if ( @_ == 2 ) {
+          my ( $params, $returns ) = $validator->(@_);
+          Sub::Meta->new(
+            parameters => do {
+              if ( ref $params eq 'ARRAY' ) {
+                my @meta_params = map { Sub::Meta::Param->new($_) } @$params;
+                Sub::Meta::Parameters->new( args => \@meta_params );
+              }
+              else {
+                my @meta_params = map {
+                  Sub::Meta::Param->new({
+                    name  => $_,
+                    type  => $params->{$_},
+                    named => 1,
+                  });
+                } keys %$params;
+              }
+            },
+            returns => Sub::Meta::Returns->new(
+              scalar => $returns,
+              list   => $returns,
+              void   => $returns,
+            ),
+          );
+        }
+        else {
+          my ($constraint_meta) = $validator->(@_);
+          $constraint_meta;
+        }
+      };
+
+      return $parent->create_child_type(
+        display_name => 'TypedCodeRef',
+        message      => sub {
+          my $invalid_value = shift;
+          $parent->get_message($invalid_value);
+        },
+        constraint => sub {
+          my $typed_code_ref = shift;
+          return !!0 if ref $typed_code_ref ne 'CODE';
+
+          my $maybe_meta = find_sub_meta($sub_meta_finders, $typed_code_ref);
+          my $meta = do {
+            if ( !defined $maybe_meta ) {
+              # TODO: 渡されたAnonymous Subroutineの型が不明の場合の扱いがこれで良いのかは要検討
+              Sub::Meta->new(
+                parameters => Sub::Meta::Parameters->new(
+                  args   => [],
+                  slurpy => 1,
+                ),
+                returns => Sub::Meta::Returns->new(),
+              );
             }
             else {
-              my @meta_params = map {
-                Sub::Meta::Param->new({
-                  name  => $_,
-                  type  => $params->{$_},
-                  named => 1,
-                });
-              } keys %$params;
+              $maybe_meta;
             }
-          },
-          returns    => Sub::Meta::Returns->new(
-            scalar => $returns,
-            list   => $returns,
-            void   => $returns,
-          ),
-        );
+          };
+          $constraint_meta->is_same_interface($meta);
+        },
+      );
+    },
+  );
+}
+
+sub find_sub_meta {
+  my ($sub_meta_finders, $typed_code_ref) = @_;
+  for my $finder (@$sub_meta_finders) {
+    my $meta = $finder->($typed_code_ref);
+    return $meta if defined $meta;
+  }
+  return;
+}
+
+sub get_sub_meta_from_sub_anon_typed {
+  my $typed_code_ref = shift;
+  if ( my $info = Sub::Anon::Typed::get_info($typed_code_ref) ) {
+    my @parameters = do {
+      if ( ref $info->{params} eq 'ARRAY' ) {
+        map { Sub::Meta::Param->new($_) } @{ $info->{params} };
       }
       else {
-        my ($constraint_meta) = $validator->(@_);
-        $constraint_meta;
+        map {
+          Sub::Meta::Param->new({
+            name  => $_,
+            type  => $info->{params}{$_},
+            named => 1,
+          });
+        } keys %{ $info->{params} };
       }
     };
-
-    $parent->create_child_type(
-      display_name => 'TypedCodeRef',
-      message => sub {
-        my $invalid_value = shift;
-        $parent->get_message($invalid_value);
-      },
-      constraint => sub {
-        my $typed_code_ref = shift;
-        return !!0 if ref $typed_code_ref ne 'CODE';
-        my $meta = get_meta($typed_code_ref);
-        $constraint_meta->is_same_interface($meta);
-      },
+    Sub::Meta->new(
+      parameters => Sub::Meta::Parameters->new(args => \@parameters),
+      returns    => Sub::Meta::Returns->new(
+        scalar => $info->{isa},
+        list   => $info->{isa},
+        void   => $info->{isa},
+      ),
     );
-  },
-});
-
-sub get_meta {
-  my $typed_code_ref = shift;
-  # TODO: 開放閉鎖原則に沿う形にする
-  my $meta = do {
-    if ( my $info = Sub::Anon::Typed::get_info($typed_code_ref) ) {
-      # TODO: $info->{params} がnamedな場合も考慮する
-      my @parameters = map { Sub::Meta::Param->new($_) } @{ $info->{params} };
-      Sub::Meta->new(
-        parameters => Sub::Meta::Parameters->new(args => \@parameters),
-        returns    => Sub::Meta::Returns->new(
-          scalar => $info->{isa},
-          list   => $info->{isa},
-          void   => $info->{isa},
-        ),
-      );
-    }
-    else {
-      # TODO: 渡されたAnonymous Subroutineの型が不明の場合の扱いがこれで良いのかは要検討
-      Sub::Meta->new(
-        parameters => Sub::Meta::Parameters->new(
-          args   => [],
-          slurpy => 1,
-        ),
-        returns => Sub::Meta::Returns->new(),
-      );
-    }
-  };
+  }
 }
+
+__PACKAGE__->add_type( __PACKAGE__->create_type([\&get_sub_meta_from_sub_anon_typed]) );
 
 __PACKAGE__->meta->make_immutable;
 
