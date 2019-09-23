@@ -1,5 +1,5 @@
-name = "Types-AnonSub"
-# badges = ["travis-ci.com"]
+name = "Types-TypedCodeRef"
+badges = ["circleci"]
 module_maker="ModuleBuildTiny"
 static_install = "auto"
 

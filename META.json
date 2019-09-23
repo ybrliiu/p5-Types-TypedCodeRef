@@ -12,7 +12,7 @@
       "url" : "http://search.cpan.org/perldoc?CPAN::Meta::Spec",
       "version" : 2
    },
-   "name" : "Types-AnonSub",
+   "name" : "Types-TypedCodeRef",
    "no_index" : {
       "directory" : [
          "t",
@@ -42,6 +42,11 @@
       },
       "runtime" : {
          "requires" : {
+            "Carp" : "0",
+            "Scalar::Util" : "0",
+            "Sub::Anon::Typed" : "0",
+            "Sub::Meta" : "0",
+            "Type::Tiny" : "0",
             "perl" : "5.010001"
          }
       },
@@ -54,13 +59,13 @@
    "release_status" : "unstable",
    "resources" : {
       "bugtracker" : {
-         "web" : "https://github.com/ybrliiu/p5-Types-AnonSub/issues"
+         "web" : "https://github.com/ybrliiu/p5-Types-TypedCodeRef/issues"
       },
-      "homepage" : "https://github.com/ybrliiu/p5-Types-AnonSub",
+      "homepage" : "https://github.com/ybrliiu/p5-Types-TypedCodeRef",
       "repository" : {
          "type" : "git",
-         "url" : "git://github.com/ybrliiu/p5-Types-AnonSub.git",
-         "web" : "https://github.com/ybrliiu/p5-Types-AnonSub"
+         "url" : "git://github.com/ybrliiu/p5-Types-TypedCodeRef.git",
+         "web" : "https://github.com/ybrliiu/p5-Types-TypedCodeRef"
       }
    },
    "version" : "0.01",
