@@ -9,7 +9,7 @@ ok !$type->check(anon [Int] => Int, sub { $_[0] + $_[1] });
 ok !$type->check(0);
 ok !$type->check([]);
 ok !$type->check(sub {});
-diag $type->get_message([]);
+is $type->get_message([]), q{Reference [] did not pass type constraint "TypedCodeRef[ [Int, Int] => Int ]"};
 
 my $type_named = TypedCodeRef[ +{ x => Int, y => Int } => Int ];
 ok $type_named->check(anon +{ x => Int, y => Int } => Int, sub { $_[0] * $_[1] });
@@ -17,6 +17,6 @@ ok !$type_named->check(anon [Int] => Int, sub { $_[0] + $_[1] });
 ok !$type_named->check(0);
 ok !$type_named->check([]);
 ok !$type_named->check(sub {});
-diag $type_named->get_message([]);
+is $type_named->get_message([]), q{Reference [] did not pass type constraint "TypedCodeRef[ { x => Int, y => Int } => Int ]"};
 
 done_testing;
