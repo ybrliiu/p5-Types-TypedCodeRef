@@ -43,7 +43,7 @@ sub _build_name_generator {
       }
       else {
         $type_name . '[ { '
-          . join( ', ', map { "$_ => $parameters->{$_}" } keys %$parameters )
+          . join( ', ', map { "$_ => $parameters->{$_}" } sort keys %$parameters )
           . ' } => '
           . $type_parameters[1] . ' ]';
       }
