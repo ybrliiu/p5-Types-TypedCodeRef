@@ -10,6 +10,7 @@ use Type::Library (
   -declare => qw( TypedCodeRef ),
 );
 
+use overload ();
 use Carp ();
 use Type::Tiny ();
 use Type::Params qw( compile compile_named multisig );
@@ -132,7 +133,7 @@ sub _build_constraint_generator {
 sub _is_callable {
   my $callable = shift;
   # for CODE base object
-  ref $callable eq 'CODE' || eval { sub { &$callable } || 1; };
+  Scalar::Util::reftype($callable) eq 'CODE' || overload::Overloaded($callable);
 }
 
 sub find_sub_meta {
