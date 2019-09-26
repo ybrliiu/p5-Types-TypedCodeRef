@@ -59,37 +59,37 @@ sub _build_constraint_generator {
   my (undef, $sub_meta_finders) = $check->(@_);
 
   sub {
-    my $parent = CodeRef;
-    return $parent unless @_;
+    my $constraints_sub_meta = do {
+      if ( @_ == 0 ) {
+        unknown_sub_meta();
+      }
+      elsif ( @_ == 1 ) {
+        state $validator = compile( InstanceOf( ['Sub::Meta'] ) );
+        my ($constraints_sub_meta) = $validator->(@_);
+        $constraints_sub_meta;
+      }
+      elsif ( @_ == 2 ) {
+        state $validator = do {
+          my $TypeConstraint = Types::Standard::HasMethods( [qw( check get_message )] );
+          multisig(
+            compile( ArrayRef( [$TypeConstraint] ), $TypeConstraint ),
+            compile( HashRef(  [$TypeConstraint] ), $TypeConstraint ),
+          );
+        };
+        my ($params, $returns) = $validator->(@_);
 
-    state $validator = do {
-      my $TypeConstraint = Types::Standard::HasMethods( [qw( check get_message )] );
-      multisig(
-        compile( ArrayRef( [$TypeConstraint] ), $TypeConstraint ),
-        compile( HashRef(  [$TypeConstraint] ), $TypeConstraint ),
-        compile( InstanceOf( ['Sub::Meta'] ) ),
-      );
-    };
-
-    my $constraint_meta = do {
-      if ( @_ == 2 ) {
-        my ( $params, $returns ) = $validator->(@_);
         Sub::Meta->new(
           parameters => do {
-            if ( ref $params eq 'ARRAY' ) {
-              my @meta_params = map { Sub::Meta::Param->new($_) } @$params;
-              Sub::Meta::Parameters->new( args => \@meta_params );
-            }
-            else {
-              my @meta_params = map {
-                Sub::Meta::Param->new({
-                  name  => $_,
-                  type  => $params->{$_},
-                  named => 1,
-                });
-              } sort keys %$params;
-              Sub::Meta::Parameters->new( args => \@meta_params );
-            }
+            my @meta_params = ref $params eq 'ARRAY'
+              ? map { Sub::Meta::Param->new($_) } @$params
+              : map {
+                  Sub::Meta::Param->new({
+                    name  => $_,
+                    type  => $params->{$_},
+                    named => 1,
+                  });
+                } sort keys %$params;
+            Sub::Meta::Parameters->new(args => \@meta_params);
           },
           returns => Sub::Meta::Returns->new(
             scalar => $returns,
@@ -99,8 +99,7 @@ sub _build_constraint_generator {
         );
       }
       else {
-        my ($constraint_meta) = $validator->(@_);
-        $constraint_meta;
+        Carp::croak 'Too many arguments.';
       }
     };
 
@@ -108,32 +107,27 @@ sub _build_constraint_generator {
         my $typed_code_ref = shift;
         return !!0 unless _is_callable($typed_code_ref);
 
-        my $maybe_meta = find_sub_meta($sub_meta_finders, $typed_code_ref);
-        my $meta = do {
-          if ( !defined $maybe_meta ) {
-            # TODO: 渡されたAnonymous Subroutineの型が不明の場合の扱いがこれで良いのかは要検討
-            Sub::Meta->new(
-              parameters => Sub::Meta::Parameters->new(
-                args   => [],
-                slurpy => 1,
-              ),
-              returns => Sub::Meta::Returns->new(),
-            );
-          }
-          else {
-            $maybe_meta;
-          }
-        };
-        $constraint_meta->is_same_interface($meta);
+        my $maybe_sub_meta = find_sub_meta($sub_meta_finders, $typed_code_ref);
+        $constraints_sub_meta->is_same_interface($maybe_sub_meta // unknown_sub_meta());
     };
   }
 }
 
-# I should allow overload?
+sub unknown_sub_meta {
+  # TODO: サブルーチンの引数の型と返り値の型が不明な場合これで良いのか
+  Sub::Meta->new(
+    parameters => Sub::Meta::Parameters->new(
+      args   => [],
+      slurpy => 1,
+    ),
+    returns => Sub::Meta::Returns->new(),
+  );
+}
+
 sub _is_callable {
   my $callable = shift;
-  # for CODE base object
-  Scalar::Util::reftype($callable) eq 'CODE' || overload::Overloaded($callable);
+  my $reftype = Scalar::Util::reftype($callable);
+  ( defined $reftype && $reftype eq 'CODE' ) || overload::Overloaded($callable);
 }
 
 sub find_sub_meta {
