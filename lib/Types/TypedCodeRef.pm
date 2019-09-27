@@ -16,7 +16,7 @@ use Type::Tiny ();
 use Type::Params qw( compile compile_named multisig );
 use Types::Standard qw( ClassName ArrayRef HashRef CodeRef InstanceOf );
 use Scalar::Util;
-use Sub::Anon::Typed ();
+use AnonSub::Typed ();
 use Sub::Meta;
 use Sub::Meta::Param;
 use Sub::Meta::Parameters;
@@ -143,7 +143,7 @@ __PACKAGE__->add_type( __PACKAGE__->create_type([\&get_sub_meta_from_sub_anon_ty
 
 sub get_sub_meta_from_sub_anon_typed {
   my $typed_code_ref = shift;
-  if ( Scalar::Util::blessed($typed_code_ref) && $typed_code_ref->isa('Sub::Anon::Typed') ) {
+  if ( Scalar::Util::blessed($typed_code_ref) && $typed_code_ref->isa('AnonSub::Typed') ) {
     my @parameters = do {
       if ( ref $typed_code_ref->params eq 'ARRAY' ) {
         map { Sub::Meta::Param->new($_) } @{ $typed_code_ref->params };
@@ -187,7 +187,7 @@ Types::TypedCodeRef - Types for any typed anonymous subroutine.
     use Test2::V0;
     use Types::TypedCodeRef -types;
     use Types::Standard qw( Int Str );
-    use Sub::Anon::Typed qw( anon );
+    use AnonSub::Typed qw( anon );
     
     my $type = TypedCodeRef[ [Int, Int] => Int ];
     ok $type->check(anon [Int, Int] => Int, sub { $_[0] + $_[1] });

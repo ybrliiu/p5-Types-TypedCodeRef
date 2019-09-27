@@ -44,7 +44,7 @@
          "requires" : {
             "Carp" : "0",
             "Scalar::Util" : "0",
-            "Sub::Anon::Typed" : "0",
+            "AnonSub::Typed" : "0",
             "Sub::Meta" : "0",
             "Type::Tiny" : "0",
             "perl" : "5.010001"
