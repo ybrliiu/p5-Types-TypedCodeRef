@@ -12,7 +12,7 @@ jobs:
       - restore_cache:
          keys:
            - perl-modules-{{ checksum "cpanfile" }}
-      - run: cpanm -Llocal git@github.com:ybrliiu/p5-Sub-Anon-Typed.git
+      - run: cpanm -Llocal git@github.com:ybrliiu/p5-AnonSub-Typed.git
       - run: cpanm -Llocal --quiet --notest --skip-satisfied --installdeps --with-recommend .
       - save_cache:
           key: perl-modules-{{ checksum "cpanfile" }}
