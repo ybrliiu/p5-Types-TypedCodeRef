@@ -10,7 +10,7 @@ use Type::Tiny ();
 use Type::Params qw( compile compile_named multisig );
 use Types::Standard qw( Str ArrayRef HashRef CodeRef InstanceOf );
 use Scalar::Util;
-use Sub::Anon::Typed;
+use AnonSub::Typed;
 use Sub::Meta;
 use Sub::Meta::Param;
 use Sub::Meta::Parameters;

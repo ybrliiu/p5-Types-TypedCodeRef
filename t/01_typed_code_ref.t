@@ -1,7 +1,7 @@
 use Test2::V0;
 use Types::TypedCodeRef -types;
 use Types::Standard qw( Int Str ArrayRef );
-use Sub::Anon::Typed;
+use AnonSub::Typed;
 
 my $type = TypedCodeRef[ [Int, Int] => Int ];
 ok $type->check(anon [Int, Int] => Int, sub { $_[0] + $_[1] });

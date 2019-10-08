@@ -8,7 +8,7 @@ Types::TypedCodeRef - Types for any typed anonymous subroutine.
     use Test2::V0;
     use Types::TypedCodeRef -types;
     use Types::Standard qw( Int Str );
-    use Sub::Anon::Typed qw( anon );
+    use AnonSub::Typed qw( anon );
     
     my $type = TypedCodeRef[ [Int, Int] => Int ];
     ok $type->check(anon [Int, Int] => Int, sub { $_[0] + $_[1] });
