@@ -149,7 +149,7 @@ sub create_unknown_sub_meta {
 sub create {
   my $self = shift;
   Type::Tiny->new(
-    name                 => 'TypedCodeRef',
+    name                 => $self->name,
     name_generator       => $self->name_generator,
     constraint_generator => $self->constraint_generator,
   );
