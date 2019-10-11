@@ -44,21 +44,23 @@ has sub_meta_finders => (
 sub _build_name_generator {
   sub {
     my ($type_name, @type_parameters) = @_;
-    if ( @type_parameters == 2 ) {
-      my $parameters = $type_parameters[0];
-      if ( ref $parameters eq 'ARRAY' ) {
-        $type_name . '[ [' . join(', ', @$parameters) . '] => ' . $type_parameters[1] . ' ]';
+    $type_name . do {
+      if ( @type_parameters == 2 ) {
+        my $parameters = $type_parameters[0];
+        if ( ref $parameters eq 'ARRAY' ) {
+          '[ [' . join(', ', @$parameters) . '] => ' . $type_parameters[1] . ' ]';
+        }
+        else {
+          '[ { '
+            . join( ', ', map { "$_ => $parameters->{$_}" } sort keys %$parameters )
+            . ' } => '
+            . $type_parameters[1] . ' ]';
+        }
       }
       else {
-        $type_name . '[ { '
-          . join( ', ', map { "$_ => $parameters->{$_}" } sort keys %$parameters )
-          . ' } => '
-          . $type_parameters[1] . ' ]';
+        "[$type_parameters[0]]";
       }
-    }
-    else {
-        "${type_name}[$type_parameters[0]]";
-    }
+    };
   };
 }
 
@@ -117,7 +119,7 @@ sub _build_constraint_generator {
         my $maybe_sub_meta = $self->find_sub_meta($typed_code_ref);
         $constraints_sub_meta->is_same_interface($maybe_sub_meta // create_unknown_sub_meta());
     };
-  }
+  };
 }
 
 sub _is_callable {
