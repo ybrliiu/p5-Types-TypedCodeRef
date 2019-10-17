@@ -12,6 +12,7 @@ jobs:
       - restore_cache:
          keys:
            - perl-modules-{{ checksum "cpanfile" }}
+      - run: cpanm -Llocal --quiet --notest --skip-satisfied App::cpm
       - run: cpm install -v --no-test
       - run: cpm install --notest Devel::Cover Devel::Cover::Report::Codecov
       - save_cache:
