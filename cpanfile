@@ -3,7 +3,7 @@ requires 'Carp';
 requires 'Scalar::Util';
 requires 'Sub::Meta';
 requires 'Type::Tiny';
-requires 'AnonSub::Typed', git => 'git@github.com:ybrliiu/p5-AnonSub-Typed.git';
+requires 'AnonSub::Typed', url => 'git@github.com:ybrliiu/p5-AnonSub-Typed.git';
 requires 'Moo';
 
 on 'test' => sub {

@@ -14,10 +14,12 @@ jobs:
            - perl-modules-{{ checksum "cpanfile" }}
       - run: cpanm -Llocal git@github.com:ybrliiu/p5-AnonSub-Typed.git
       - run: cpanm -Llocal --quiet --notest --skip-satisfied --installdeps --with-recommend .
+      - run: cpanm -Llocal --quiet --notest --skip-satisfied Devel::Cover Devel::Cover::Report::Codecov
       - save_cache:
           key: perl-modules-{{ checksum "cpanfile" }}
           paths:
             - "local"
       - run: perl Build.PL
       - run: ./Build build
-      - run: ./Build test
+      - run: cover -test +ignore '^local/lib/perl5'
+      - run: cover -report codecov
