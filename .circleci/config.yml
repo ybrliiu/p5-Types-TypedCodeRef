@@ -12,9 +12,8 @@ jobs:
       - restore_cache:
          keys:
            - perl-modules-{{ checksum "cpanfile" }}
-      - run: cpanm -Llocal git@github.com:ybrliiu/p5-AnonSub-Typed.git
-      - run: cpanm -Llocal --quiet --notest --skip-satisfied --installdeps --with-recommend .
-      - run: cpanm -Llocal --quiet --notest --skip-satisfied Devel::Cover Devel::Cover::Report::Codecov
+      - run: cpm install -v --no-test
+      - run: cpm install --notest Devel::Cover Devel::Cover::Report::Codecov
       - save_cache:
           key: perl-modules-{{ checksum "cpanfile" }}
           paths:
