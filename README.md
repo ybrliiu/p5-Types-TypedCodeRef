@@ -1,4 +1,4 @@
-[![Build Status](https://circleci.com/gh/ybrliiu/p5-Types-TypedCodeRef.svg)](https://circleci.com/gh/ybrliiu/p5-Types-TypedCodeRef)
+[![Build Status](https://circleci.com/gh/ybrliiu/p5-Types-TypedCodeRef.svg)](https://circleci.com/gh/ybrliiu/p5-Types-TypedCodeRef) [![Coverage Status](http://codecov.io/github/ybrliiu/p5-Types-TypedCodeRef/coverage.svg?branch=master)](https://codecov.io/github/ybrliiu/p5-Types-TypedCodeRef?branch=master)
 # NAME
 
 Types::TypedCodeRef - Types for any typed anonymous subroutine.
