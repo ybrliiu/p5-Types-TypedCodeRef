@@ -42,9 +42,10 @@
       },
       "runtime" : {
          "requires" : {
-            "Carp" : "0",
-            "Scalar::Util" : "0",
             "AnonSub::Typed" : "0",
+            "Carp" : "0",
+            "Moo" : "0",
+            "Scalar::Util" : "0",
             "Sub::Meta" : "0",
             "Type::Tiny" : "0",
             "perl" : "5.010001"
@@ -69,6 +70,9 @@
       }
    },
    "version" : "0.01",
+   "x_contributors" : [
+      "kusuda <kusuda@mfac.jp>"
+   ],
    "x_serialization_backend" : "JSON::PP version 4.02",
    "x_static_install" : 1
 }
