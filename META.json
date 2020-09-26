@@ -42,7 +42,7 @@
       },
       "runtime" : {
          "requires" : {
-            "AnonSub::Typed" : "0",
+            "Sub::WrapInType" : "0",
             "Carp" : "0",
             "Moo" : "0",
             "Scalar::Util" : "0",

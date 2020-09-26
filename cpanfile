@@ -3,7 +3,7 @@ requires 'Carp';
 requires 'Scalar::Util';
 requires 'Sub::Meta';
 requires 'Type::Tiny';
-requires 'AnonSub::Typed', url => 'https://github.com/ybrliiu/p5-AnonSub-Typed/tarball/master';
+requires 'Sub::WrapInType';
 requires 'Moo';
 
 on 'test' => sub {
