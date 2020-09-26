@@ -2,7 +2,7 @@ use 5.010001;
 use Test2::V0;
 use Test2::Tools::Spec;
 use Types::Standard qw( Int );
-use Sub::WrapInType qw( anon );
+use Sub::WrapInType qw( wrap_sub );
 use Sub::Meta;
 use Sub::Meta::Param;
 use Sub::Meta::Parameters;
