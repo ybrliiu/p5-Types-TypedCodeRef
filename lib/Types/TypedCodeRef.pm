@@ -15,11 +15,11 @@ use Types::TypedCodeRef::Factory;
 
 {
   my $factory =
-    Types::TypedCodeRef::Factory->new(sub_meta_finders => [\&get_sub_meta_from_sub_anon_typed]);
+    Types::TypedCodeRef::Factory->new(sub_meta_finders => [\&get_sub_meta_from_sub_wrap_in_type]);
   __PACKAGE__->add_type($factory->create());
 }
 
-sub get_sub_meta_from_sub_anon_typed {
+sub get_sub_meta_from_sub_wrap_in_type {
   my $typed_code_ref = shift;
   if ( Scalar::Util::blessed($typed_code_ref) && $typed_code_ref->isa('Sub::WrapInType') ) {
     my @parameters = do {
