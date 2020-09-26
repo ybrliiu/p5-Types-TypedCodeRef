@@ -2,7 +2,7 @@ use 5.010001;
 use Test2::V0;
 use Test2::Tools::Spec;
 use Types::Standard qw( Int );
-use AnonSub::Typed qw( anon );
+use Sub::WrapInType qw( anon );
 use Sub::Meta;
 use Sub::Meta::Param;
 use Sub::Meta::Parameters;
@@ -31,7 +31,7 @@ describe 'Use default constraint generator' => sub {
         ]);
         my $constraint = $factory->constraint_generator->([ Int, Int ] => Int);
 
-        ok $constraint->(anon [ Int, Int ] => Int, sub { $_[0] + $_[1] });
+        ok $constraint->(wrap_sub [ Int, Int ] => Int, sub { $_[0] + $_[1] });
       };
 
       it 'Failed to check typed code reference that has difference interface' => sub {
@@ -50,14 +50,14 @@ describe 'Use default constraint generator' => sub {
         ]);
         my $constraint = $factory->constraint_generator->([ Int ] => Int);
 
-        ok !$constraint->(anon [ Int, Int ] => Int, sub { $_[0] + $_[1] });
+        ok !$constraint->(wrap_sub [ Int, Int ] => Int, sub { $_[0] + $_[1] });
       };
 
       it 'Failed to can not found sub-meta' => sub {
         my $factory    = Types::TypedCodeRef::Factory->new(sub_meta_finders => []);
         my $constraint = $factory->constraint_generator->([ Int, Int ] => Int);
 
-        ok !$constraint->(anon [ Int, Int ] => Int, sub { $_[0] + $_[1] });
+        ok !$constraint->(wrap_sub [ Int, Int ] => Int, sub { $_[0] + $_[1] });
       };
 
     };
@@ -88,7 +88,7 @@ describe 'Use default constraint generator' => sub {
         ]);
         my $constraint = $factory->constraint_generator->(+{ a => Int, b => Int } => Int);
 
-        ok $constraint->(anon +{ a => Int, b => Int } => Int, sub {});
+        ok $constraint->(wrap_sub +{ a => Int, b => Int } => Int, sub {});
       };
 
       it 'Failed to check typed code reference that has difference interface' => sub {
@@ -115,14 +115,14 @@ describe 'Use default constraint generator' => sub {
         ]);
         my $constraint = $factory->constraint_generator->([ Int, Int ] => Int);
 
-        ok !$constraint->(anon +{ a => Int, b => Int } => Int, sub {});
+        ok !$constraint->(wrap_sub +{ a => Int, b => Int } => Int, sub {});
       };
 
       it 'Failed to can not found sub-meta' => sub {
         my $factory    = Types::TypedCodeRef::Factory->new(sub_meta_finders => []);
         my $constraint = $factory->constraint_generator->(+{ a => Int, b => Int } => Int);
 
-        ok !$constraint->(anon +{ a => Int, b => Int } => Int, sub {});
+        ok !$constraint->(wrap_sub +{ a => Int, b => Int } => Int, sub {});
       };
     };
 
@@ -145,7 +145,7 @@ describe 'Use default constraint generator' => sub {
         = Types::TypedCodeRef::Factory->new(sub_meta_finders => [ sub { $sub_meta } ]);
       my $constraint = $factory->constraint_generator->($sub_meta);
 
-      ok $constraint->(anon [ Int, Int ] => Int, sub { $_[0] + $_[1] });
+      ok $constraint->(wrap_sub [ Int, Int ] => Int, sub { $_[0] + $_[1] });
     };
 
     it 'Failed to check typed code reference that has difference interface' => sub {
@@ -159,14 +159,14 @@ describe 'Use default constraint generator' => sub {
       ]);
       my $constraint = $factory->constraint_generator->($sub_meta);
 
-      ok !$constraint->(anon [ Int, Int ] => Int, sub { $_[0] + $_[1] });
+      ok !$constraint->(wrap_sub [ Int, Int ] => Int, sub { $_[0] + $_[1] });
     };
 
     it 'Failed to can not found sub-meta' => sub {
       my $factory    = Types::TypedCodeRef::Factory->new(sub_meta_finders => []);
       my $constraint = $factory->constraint_generator->($sub_meta);
 
-      ok !$constraint->(anon [ Int, Int ] => Int, sub { $_[0] + $_[1] });
+      ok !$constraint->(wrap_sub [ Int, Int ] => Int, sub { $_[0] + $_[1] });
     };
 
   };
@@ -198,7 +198,7 @@ describe 'Use default constraint generator' => sub {
         = Types::TypedCodeRef::Factory->new(sub_meta_finders => $sub_meta_finders);
       my $constraint = $factory->constraint_generator->();
 
-      ok !$constraint->(anon [ Int, Int ] => Int, sub { $_[0] + $_[1] });
+      ok !$constraint->(wrap_sub [ Int, Int ] => Int, sub { $_[0] + $_[1] });
     };
 
   };
