@@ -9,6 +9,7 @@
 /carton.lock
 /.carton/
 /local/
+/.carmel/
 
 nytprof.out
 nytprof/
