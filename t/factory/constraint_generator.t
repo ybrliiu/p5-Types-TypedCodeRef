@@ -20,6 +20,42 @@ describe 'Use default constraint generator' => sub {
           sub {
             Sub::Meta->new(
               parameters => Sub::Meta::Parameters->new(
+                args => [ Sub::Meta::Param->new(Int) ],
+              ),
+              returns    => Sub::Meta::Returns->new(Int),
+            );
+          }
+        ]);
+        my $constraint = $factory->constraint_generator->(Int ,=> Int);
+
+        ok $constraint->(wrap_sub Int ,=> Int, sub { $_[0] ** 2 });
+        ok $constraint->(wrap_sub [Int] => Int, sub { $_[0] ** 2 });
+      };
+
+      it 'Failed to check typed code reference that has difference interface' => sub {
+        my $factory = Types::TypedCodeRef::Factory->new(sub_meta_finders => [
+          sub {
+            Sub::Meta->new(
+              parameters => Sub::Meta::Parameters->new(
+                args => [
+                  Sub::Meta::Param->new(Int),
+                  Sub::Meta::Param->new(Int),
+                ],
+              ),
+              returns    => Sub::Meta::Returns->new(Int),
+            );
+          }
+        ]);
+        my $constraint = $factory->constraint_generator->(Int ,=> Int);
+
+        ok !$constraint->(wrap_sub [ Int, Int ] => Int, sub { $_[0] + $_[1] });
+      };
+
+      it 'Succeed in check typed code reference that has same interface' => sub {
+        my $factory = Types::TypedCodeRef::Factory->new(sub_meta_finders => [
+          sub {
+            Sub::Meta->new(
+              parameters => Sub::Meta::Parameters->new(
                 args => [
                   Sub::Meta::Param->new(Int),
                   Sub::Meta::Param->new(Int),

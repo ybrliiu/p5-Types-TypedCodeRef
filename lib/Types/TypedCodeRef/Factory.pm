@@ -47,12 +47,23 @@ sub _build_name_generator {
     $type_name . do {
       if (@type_parameters == 2) {
         my ($params_types, $return_types) = @type_parameters;
-        my $params_types_name = ref $params_types eq 'ARRAY'
-            ? "[@{[ join(', ', @$params_types) ]}]"
-            : "{ @{[ join( ', ', map { qq{$_ => $params_types->{$_}} } sort keys %$params_types) ]} }";
+
+        my $params_types_name = do {
+          if (ref $params_types eq 'ARRAY') {
+            "[@{[ join(', ', @$params_types) ]}]"
+          }
+          elsif (ref $params_types eq 'HASH') {
+            "{ @{[ join( ', ', map { qq{$_ => $params_types->{$_}} } sort keys %$params_types) ]} }"
+          }
+          else {
+            $params_types
+          }
+        };
+
         my $return_types_name = ref $return_types eq 'ARRAY'
             ? "[@{[ join(', ', @$return_types) ]}]"
             : $return_types;
+
         "[ $params_types_name => $return_types_name ]";
       }
       elsif (@type_parameters == 1) {
@@ -81,25 +92,33 @@ sub _build_constraint_generator {
       elsif ( @_ == 2 ) {
         state $validator = do {
           my $TypeConstraint = HasMethods[qw( check get_message )];
-          my $ReturnTypes    = $TypeConstraint | ArrayRef[$TypeConstraint];
-          multisig(
-            compile(ArrayRef([$TypeConstraint]), $ReturnTypes),
-            compile(HashRef([$TypeConstraint]), $ReturnTypes),
+          compile(
+            $TypeConstraint | ArrayRef[$TypeConstraint] | HashRef[$TypeConstraint],
+            $TypeConstraint | ArrayRef[$TypeConstraint]
           );
         };
         my ($params, $returns) = $validator->(@_);
 
         Sub::Meta->new(
           parameters => do {
-            my @meta_params = ref $params eq 'ARRAY'
-              ? map { Sub::Meta::Param->new($_) } @$params
-              : map {
+            my @meta_params = do {
+              if ( ref $params eq 'ARRAY' ) {
+                map { Sub::Meta::Param->new($_) } @$params;
+              }
+              elsif ( ref $params eq 'HASH' ) {
+                map {
                   Sub::Meta::Param->new({
                     name  => $_,
                     type  => $params->{$_},
                     named => 1,
                   });
-                } sort keys %$params;
+                }
+                sort keys %$params;
+              }
+              else {
+                Sub::Meta::Param->new($params);
+              }
+            };
             Sub::Meta::Parameters->new(args => \@meta_params);
           },
           returns => Sub::Meta::Returns->new(
