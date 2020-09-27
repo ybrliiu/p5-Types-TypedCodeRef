@@ -48,6 +48,7 @@
             "Sub::Meta" : "0",
             "Sub::WrapInType" : "0",
             "Type::Tiny" : "0",
+            "namespace::autoclean" : "0",
             "perl" : "5.010001"
          }
       },
@@ -70,7 +71,7 @@
          "web" : "https://github.com/ybrliiu/p5-Types-TypedCodeRef"
       }
    },
-   "version" : "0.00_1",
+   "version" : "0.01",
    "x_contributors" : [
       "kusuda <kusuda@mfac.jp>"
    ],

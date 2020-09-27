@@ -4,7 +4,7 @@ use strict;
 use warnings;
 use utf8;
 
-our $VERSION = "0.00_1";
+our $VERSION = "0.01";
 
 use Type::Library (
   -base,
