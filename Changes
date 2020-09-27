@@ -2,6 +2,10 @@ Revision history for Perl extension Types-TypedCodeRef
 
 {{$NEXT}}
 
+0.02 2020-09-27T13:07:33Z
+
+    - Support new format `TypedCodeRef[$type, ...]`
+
 0.01 2020-09-27T12:31:52Z
 
     - Release
