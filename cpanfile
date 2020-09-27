@@ -3,7 +3,7 @@ requires 'Carp';
 requires 'Scalar::Util';
 requires 'Sub::Meta';
 requires 'Type::Tiny';
-requires 'Sub::WrapInType';
+requires 'Sub::WrapInType', '>= 0.03';
 requires 'Moo';
 requires 'namespace::autoclean';
 

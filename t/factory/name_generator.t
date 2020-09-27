@@ -12,8 +12,8 @@ describe 'Use default name generator' => sub {
 
     it 'One parameter' => sub {
       is(
-        $factory->name_generator->($factory->name, [Int] => Int),
-        $factory->name . '[ [Int] => Int ]'
+        $factory->name_generator->($factory->name, Int ,=> Int),
+        $factory->name . '[ Int => Int ]'
       );
     };
 

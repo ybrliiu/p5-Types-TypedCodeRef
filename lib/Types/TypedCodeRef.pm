@@ -23,10 +23,10 @@ sub get_sub_meta_from_sub_wrap_in_type {
   my $typed_code_ref = shift;
   if ( Scalar::Util::blessed($typed_code_ref) && $typed_code_ref->isa('Sub::WrapInType') ) {
     my @parameters = do {
-      if ( ref $typed_code_ref->params eq 'ARRAY' ) {
+      if (ref $typed_code_ref->params eq 'ARRAY') {
         map { Sub::Meta::Param->new($_) } @{ $typed_code_ref->params };
       }
-      else {
+      elsif (ref $typed_code_ref->params eq 'HASH') {
         map {
           Sub::Meta::Param->new({
             name  => $_,
@@ -34,6 +34,9 @@ sub get_sub_meta_from_sub_wrap_in_type {
             named => 1,
           });
         } sort keys %{ $typed_code_ref->params };
+      }
+      else {
+        Sub::Meta::Param->new($typed_code_ref->params);
       }
     };
     return Sub::Meta->new(
