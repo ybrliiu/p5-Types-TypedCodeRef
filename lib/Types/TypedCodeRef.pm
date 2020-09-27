@@ -105,5 +105,7 @@ ybrliiu E<lt>raian@reeshome.orgE<gt>
 
 L<Sub::WrapInType>
 
+L<Type::Tiny>
+
 =cut
 
