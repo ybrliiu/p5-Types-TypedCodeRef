@@ -5,6 +5,7 @@ requires 'Sub::Meta';
 requires 'Type::Tiny';
 requires 'Sub::WrapInType';
 requires 'Moo';
+requires 'namespace::autoclean';
 
 on 'test' => sub {
     requires 'Test::More', '0.98';

@@ -8,12 +8,13 @@ use overload ();
 use Carp ();
 use Type::Tiny ();
 use Type::Params qw( compile compile_named multisig );
-use Types::Standard qw( Str ArrayRef HashRef CodeRef InstanceOf );
+use Types::Standard -types;
 use Scalar::Util;
 use Sub::Meta;
 use Sub::Meta::Param;
 use Sub::Meta::Parameters;
 use Sub::Meta::Returns;
+use namespace::autoclean;
 
 has name => (
   is      => 'ro',
@@ -44,20 +45,21 @@ sub _build_name_generator {
   sub {
     my ($type_name, @type_parameters) = @_;
     $type_name . do {
-      if ( @type_parameters == 2 ) {
-        my $parameters = $type_parameters[0];
-        if ( ref $parameters eq 'ARRAY' ) {
-          '[ [' . join(', ', @$parameters) . '] => ' . $type_parameters[1] . ' ]';
-        }
-        else {
-          '[ { '
-            . join( ', ', map { "$_ => $parameters->{$_}" } sort keys %$parameters )
-            . ' } => '
-            . $type_parameters[1] . ' ]';
-        }
+      if (@type_parameters == 2) {
+        my ($params_types, $return_types) = @type_parameters;
+        my $params_types_name = ref $params_types eq 'ARRAY'
+            ? "[@{[ join(', ', @$params_types) ]}]"
+            : "{ @{[ join( ', ', map { qq{$_ => $params_types->{$_}} } sort keys %$params_types) ]} }";
+        my $return_types_name = ref $return_types eq 'ARRAY'
+            ? "[@{[ join(', ', @$return_types) ]}]"
+            : $return_types;
+        "[ $params_types_name => $return_types_name ]";
+      }
+      elsif (@type_parameters == 1) {
+        "[$type_parameters[0]]";
       }
       else {
-        "[$type_parameters[0]]";
+        '[]';
       }
     };
   };
@@ -72,16 +74,17 @@ sub _build_constraint_generator {
         create_unknown_sub_meta();
       }
       elsif ( @_ == 1 ) {
-        state $validator = compile( InstanceOf( ['Sub::Meta'] ) );
+        state $validator = compile(InstanceOf['Sub::Meta']);
         my ($constraints_sub_meta) = $validator->(@_);
         $constraints_sub_meta;
       }
       elsif ( @_ == 2 ) {
         state $validator = do {
-          my $TypeConstraint = Types::Standard::HasMethods( [qw( check get_message )] );
+          my $TypeConstraint = HasMethods[qw( check get_message )];
+          my $ReturnTypes    = $TypeConstraint | ArrayRef[$TypeConstraint];
           multisig(
-            compile( ArrayRef( [$TypeConstraint] ), $TypeConstraint ),
-            compile( HashRef(  [$TypeConstraint] ), $TypeConstraint ),
+            compile(ArrayRef([$TypeConstraint]), $ReturnTypes),
+            compile(HashRef([$TypeConstraint]), $ReturnTypes),
           );
         };
         my ($params, $returns) = $validator->(@_);
@@ -137,7 +140,6 @@ sub find_sub_meta {
 }
 
 sub create_unknown_sub_meta {
-  # TODO: サブルーチンの引数の型と返り値の型が不明な場合これで良いのか
   Sub::Meta->new(
     parameters => Sub::Meta::Parameters->new(
       args   => [],
@@ -152,6 +154,7 @@ sub create {
   Type::Tiny->new(
     name                 => $self->name,
     name_generator       => $self->name_generator,
+    constraint           => sub { _is_callable(shift) },
     constraint_generator => $self->constraint_generator,
   );
 }
