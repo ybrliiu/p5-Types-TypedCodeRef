@@ -44,6 +44,17 @@ describe 'Use default name generator' => sub {
 
   };
 
+  describe 'Multiple return values' => sub {
+
+    it 'Multiple return values' => sub {
+      is(
+        $factory->name_generator->($factory->name, [Int] => [Int, Int]),
+        $factory->name . '[ [Int] => [Int, Int] ]'
+      );
+    };
+
+  };
+
   describe 'Use instance of Sub::Meta directly' => sub {
 
     it q{Name generator returns instance's address} => sub {
@@ -55,6 +66,17 @@ describe 'Use default name generator' => sub {
         returns => Sub::Meta::Returns->new(),
       );
       is $factory->name_generator->($factory->name, $meta), $factory->name . "[$meta]";
+    };
+
+  };
+
+  describe 'Empty parameters' => sub {
+    
+    it q{Empty parameters} => sub {
+      is(
+        $factory->name_generator->($factory->name),
+        $factory->name . '[]'
+      );
     };
 
   };
