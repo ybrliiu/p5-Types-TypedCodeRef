@@ -2,6 +2,9 @@ Revision history for Perl extension Types-TypedCodeRef
 
 {{$NEXT}}
 
+0.03 2020-12-12T14:13:22Z
+    - Fix the version of Type::Tiny
+
 0.02 2020-09-27T13:07:33Z
 
     - Support new format `TypedCodeRef[$type, ...]`
