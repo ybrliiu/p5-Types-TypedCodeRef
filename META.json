@@ -47,7 +47,7 @@
             "Scalar::Util" : "0",
             "Sub::Meta" : "0",
             "Sub::WrapInType" : "0.03",
-            "Type::Tiny" : "0",
+            "Type::Tiny" : "1.010004",
             "namespace::autoclean" : "0",
             "perl" : "5.010001"
          }
