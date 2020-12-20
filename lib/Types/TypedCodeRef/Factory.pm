@@ -24,7 +24,7 @@ our @CARP_NOT;
 sub _is_callable {
   my $callable = shift;
   my $reftype = Scalar::Util::reftype($callable);
-  ( defined $reftype && $reftype eq 'CODE' ) || overload::Overloaded($callable);
+  ( defined $reftype && $reftype eq 'CODE' ) || defined overload::Method($callable, '&{}');
 }
 
 my $CallableType = Type::Tiny->new(
