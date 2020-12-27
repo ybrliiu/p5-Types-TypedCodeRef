@@ -6,18 +6,19 @@ ok !Types::TypedCodeRef::Factory::_is_callable('string');
 ok !Types::TypedCodeRef::Factory::_is_callable([]);
 ok Types::TypedCodeRef::Factory::_is_callable(sub {});
 
-package BlessCodeRef {
+{
+  package BlessCodeRef;
 
   sub new {
     my ($class, $code) = @_;
     bless $code, $class;
   }
-
 }
 
 ok Types::TypedCodeRef::Factory::_is_callable(BlessCodeRef->new(sub {}));
 
-package OverloadedCodeDereferenceOperator {
+{
+  package OverloadedCodeDereferenceOperator;
 
   use overload (
     '&{}'    => 'as_coderef',
@@ -42,7 +43,8 @@ package OverloadedCodeDereferenceOperator {
   ok Types::TypedCodeRef::Factory::_is_callable($obj);
 }
 
-package OverloadedOtherOperator {
+{
+  package OverloadedOtherOperator;
 
   use overload (
     '+'    => 'sum',
