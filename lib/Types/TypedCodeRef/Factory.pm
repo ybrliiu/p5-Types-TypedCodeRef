@@ -116,8 +116,8 @@ sub _build_constraint_generator {
         state $validator = do {
           my $TypeConstraint = HasMethods[qw( check get_message )];
           compile(
-            $TypeConstraint | ArrayRef[$TypeConstraint] | HashRef[$TypeConstraint],
-            $TypeConstraint | ArrayRef[$TypeConstraint]
+            $TypeConstraint | ArrayRef([$TypeConstraint]) | HashRef([$TypeConstraint]),
+            $TypeConstraint | ArrayRef([$TypeConstraint])
           );
         };
         my ($params, $returns) = $validator->(@_);
