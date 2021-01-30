@@ -38,33 +38,13 @@ has name => (
   default => 'TypedCodeRef',
 );
 
-has name_generator => (
-  is      => 'ro',
-  isa     => CodeRef,
-  builder => '_build_name_generator',
-);
-
-has constraint_generator => (
-  is      => 'ro',
-  isa     => CodeRef,
-  lazy    => 1,
-  builder => '_build_constraint_generator',
-);
-
 has sub_meta_finders => (
   is       => 'ro',
   isa      => ArrayRef[CodeRef],
   required => 1,
 );
 
-has coercion_generator => (
-  is       => 'ro',
-  isa      => CodeRef,
-  lazy     => 1,
-  builder  => '_build_coercion_generator',
-);
-
-sub _build_name_generator {
+sub name_generator {
   sub {
     my ($type_name, @type_parameters) = @_;
     $type_name . do {
@@ -99,7 +79,7 @@ sub _build_name_generator {
   };
 }
 
-sub _build_constraint_generator {
+sub constraint_generator {
   my $self = shift;
 
   sub {
@@ -183,9 +163,7 @@ sub create_unknown_sub_meta {
   );
 }
 
-sub _build_coercion_generator {
-  my $self = shift;
-
+sub coercion_generator {
   sub {
     my (undef, $type, @type_parameters) = @_;
     
