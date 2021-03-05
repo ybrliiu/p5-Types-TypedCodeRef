@@ -2,6 +2,10 @@ Revision history for Perl extension Types-TypedCodeRef
 
 {{$NEXT}}
 
+0.06 2021-03-05T15:35:58Z
+    - Update Sub::Meta v0.05
+    - Remove an early optimization
+
 0.05 2020-12-27T16:46:24Z
     - Fix determining callable value
     - Fix error occured on v5.12, v5.14
