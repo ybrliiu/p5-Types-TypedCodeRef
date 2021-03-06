@@ -23,8 +23,9 @@ sub get_sub_meta_from_sub_wrap_in_type {
   my $typed_code_ref = shift;
   if ( Scalar::Util::blessed($typed_code_ref) && $typed_code_ref->isa('Sub::WrapInType') ) {
     return Sub::Meta->new(
-      args    => $typed_code_ref->params,
-      returns => $typed_code_ref->returns,
+      args      => $typed_code_ref->params,
+      returns   => $typed_code_ref->returns,
+      is_method => $typed_code_ref->is_method,
     );
   }
   return;
