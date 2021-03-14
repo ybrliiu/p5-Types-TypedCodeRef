@@ -10,8 +10,8 @@ use Type::Library (
   -base,
   -declare => qw( TypedCodeRef ),
 );
-
 use Types::TypedCodeRef::Factory;
+use Scalar::Util ();
 
 {
   my $factory =
