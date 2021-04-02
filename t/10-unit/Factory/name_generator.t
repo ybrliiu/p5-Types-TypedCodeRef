@@ -62,7 +62,7 @@ describe 'Use default name generator' => sub {
         args => [Int, Int],
         returns => Int,
       );
-      is $factory->name_generator->($factory->name, $meta), $factory->name . "[sub(Int, Int) => Int]";
+      is $factory->name_generator->($factory->name, $meta), $factory->name . "[Sub::Meta=sub(Int, Int) => Int]";
     };
   };
 
