@@ -81,34 +81,7 @@ sub constraint_generator {
   my $self = shift;
 
   sub {
-    my $constraints_sub_meta = do {
-      if ( @_ == 0 ) {
-        create_unknown_sub_meta();
-      }
-      elsif ( @_ == 1 ) {
-        state $validator = compile(InstanceOf['Sub::Meta']);
-        my ($constraints_sub_meta) = $validator->(@_);
-        $constraints_sub_meta;
-      }
-      elsif ( @_ == 2 ) {
-        state $validator = do {
-          my $TypeConstraint = HasMethods[qw( check get_message )];
-          compile(
-            $TypeConstraint | ArrayRef([$TypeConstraint]) | HashRef([$TypeConstraint]),
-            $TypeConstraint | ArrayRef([$TypeConstraint])
-          );
-        };
-        my ($params, $returns) = $validator->(@_);
-
-        Sub::Meta->new(
-          args    => $params,
-          returns => $returns,
-        );
-      }
-      else {
-        Carp::croak 'Too many arguments.';
-      }
-    };
+    my $constraints_sub_meta = create_constraints_sub_meta(@_);
 
     sub {
         my $typed_code_ref = shift;
@@ -131,6 +104,35 @@ sub create_unknown_sub_meta {
   Sub::Meta->new(
     slurpy => 1,
   );
+}
+
+sub create_constraints_sub_meta {
+  if ( @_ == 0 ) {
+    return create_unknown_sub_meta();
+  }
+  elsif ( @_ == 1 ) {
+    state $validator = compile(InstanceOf['Sub::Meta']);
+    my ($constraints_sub_meta) = $validator->(@_);
+    return $constraints_sub_meta;
+  }
+  elsif ( @_ == 2 ) {
+    state $validator = do {
+      my $TypeConstraint = HasMethods[qw( check get_message )];
+      compile(
+        $TypeConstraint | ArrayRef([$TypeConstraint]) | HashRef([$TypeConstraint]),
+        $TypeConstraint | ArrayRef([$TypeConstraint])
+      );
+    };
+    my ($params, $returns) = $validator->(@_);
+
+    return Sub::Meta->new(
+      args    => $params,
+      returns => $returns,
+    );
+  }
+  else {
+    Carp::croak 'Too many arguments.';
+  }
 }
 
 sub coercion_generator {
@@ -156,6 +158,28 @@ sub coercion_generator {
   };
 }
 
+sub message_generator {
+  my $self = shift;
+
+  sub {
+    my (@type_parameters) = @_;
+    my $constraints_sub_meta = create_constraints_sub_meta(@type_parameters);
+
+    return sub {
+      my $typed_code_ref = shift;
+      my $maybe_sub_meta = $self->find_sub_meta($typed_code_ref);
+
+      my $value = defined $maybe_sub_meta ? sprintf('Code Reference %s', $maybe_sub_meta->display)
+                                          : Type::Tiny->can('_dd')->($typed_code_ref);
+
+      my $display = sprintf('Types::TypedCodeRef[%s=%s]', ref $constraints_sub_meta, $constraints_sub_meta->display);
+      my $reason = $constraints_sub_meta->interface_error_message($maybe_sub_meta // create_unknown_sub_meta());
+
+      return sprintf('%s did not pass type constraint "%s". Reason: %s', $value, $display, $reason);
+    }
+  }
+}
+
 sub create {
   my $self = shift;
   Type::Tiny->new(
@@ -164,6 +188,7 @@ sub create {
     name_generator       => $self->name_generator,
     constraint_generator => $self->constraint_generator,
     coercion_generator   => $self->coercion_generator,
+    message_generator    => $self->message_generator,
   );
 }
 
