@@ -1,0 +1,52 @@
+name: test
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        perl:
+          [
+            "5.40",
+            "5.38",
+            "5.36",
+            "5.34",
+            "5.32",
+            "5.30",
+            "5.28",
+            "5.26",
+            "5.24",
+            "5.22",
+            "5.20",
+            "5.18",
+            "5.16",
+            "5.14",
+          ]
+        include:
+          - perl: 5.40
+            coverage: true
+    name: Perl ${{ matrix.perl }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup perl
+        uses: shogo82148/actions-setup-perl@v1
+        with:
+          perl-version: ${{ matrix.perl }}
+
+      - name: Install dependencies
+        run: cpm install -g --with-all
+      - run: perl Build.PL
+      - run: ./Build
+      - run: ./Build test
+
+      - name: Run coverage
+        if: ${{ matrix.coverage }}
+        env:
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+        run: |
+          cpm install -g Devel::Cover::Report::Codecov
+          cover -test -report codecov -ignore '^local/lib/perl5'
